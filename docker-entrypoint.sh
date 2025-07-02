@@ -18,28 +18,28 @@ fi
 # - curl
 # - [gh](https://cli.github.com/)
 #
-# You can probably adjust this to use `jq` or the latest version of `yq` without too much trouble.
 
-setupGhAppAuth() {
-  if [[ "${GITHUB_APP_ID}" != "" ]] && [[ -e "${GITHUB_APP_SECRET_PATH}" ]] ; then
-    # Create a temporary JWT for API access
-    GITHUB_JWT=$( jwt encode --secret "@${GITHUB_APP_SECRET_PATH}" -i "${GITHUB_APP_ID}" -e "10 minutes" --alg RS256 )
-
-    # TODO: Add picking correct installation based on the organisation
-    #  Request installation information; note that this assumes there's just one installation (this is a private GitHub app);
-    #  if you have multiple installations you'll have to customize this to pick out the installation you are interested in
-    APP_TOKEN_URL=$( curl -s -H "Authorization: Bearer ${GITHUB_JWT}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/app/installations | yq r - '[0].access_tokens_url' )
-
-    # Now POST to the installation token URL to generate a new access token we can use to with with the gh and hub command lines
-    export GITHUB_TOKEN=$( curl -s -X POST -H "Authorization: Bearer ${GITHUB_JWT}" -H "Accept: application/vnd.github.v3+json" ${APP_TOKEN_URL} | yq r - token )
-
-    # Configure gh as an auth provider for git so we can use git push / pull / fetch with github.com URLs
-    gh auth setup-git
+# Read GitHub App credentials from mounted secret files if available
+if [ -n "${GITHUB_SECRET_MOUNT_PATH:-}" ] && [ -n "${GITHUB_SECRET_APP_ID_NAME:-}" ] && [ -n "${GITHUB_SECRET_APP_INSTALLATION_ID_NAME:-}" ] && [ -n "${GITHUB_SECRET_APP_PRIVATE_KEY_NAME:-}" ]; then
+  GITHUB_APP_ID=""
+  GITHUB_APP_INSTALLATION_ID=""
+  GITHUB_APP_SECRET_PATH=""
+  if [ -f "${GITHUB_SECRET_MOUNT_PATH}/${GITHUB_SECRET_APP_ID_NAME}" ]; then
+    GITHUB_APP_ID=$(cat "${GITHUB_SECRET_MOUNT_PATH}/${GITHUB_SECRET_APP_ID_NAME}")
   fi
-}
+  if [ -f "${GITHUB_SECRET_MOUNT_PATH}/${GITHUB_SECRET_APP_INSTALLATION_ID_NAME}" ]; then
+    GITHUB_APP_INSTALLATION_ID=$(cat "${GITHUB_SECRET_MOUNT_PATH}/${GITHUB_SECRET_APP_INSTALLATION_ID_NAME}")
+  fi
+  if [ -f "${GITHUB_SECRET_MOUNT_PATH}/${GITHUB_SECRET_APP_PRIVATE_KEY_NAME}" ]; then
+    GITHUB_APP_SECRET_PATH="${GITHUB_SECRET_MOUNT_PATH}/${GITHUB_SECRET_APP_PRIVATE_KEY_NAME}"
+  fi
+  export GITHUB_APP_ID
+  export GITHUB_APP_INSTALLATION_ID
+  export GITHUB_APP_SECRET_PATH
+fi
 
-# Create the .gitconfig and .git-credentials files
-setupGhAppAuth
+# Setup GitHub App authentication if credentials are available
+gh auth setup-git
 
 # copy the .gitconfig and .git-credentials files to the basic-auth workspace
 mkdir -p "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}"
