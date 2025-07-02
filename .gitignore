@@ -1,0 +1,89 @@
+# GitHub Actions Runner - Targeted .gitignore
+
+#####################################################
+# OS Specific Files
+#####################################################
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+#####################################################
+# Docker Specific
+#####################################################
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Docker build temp files
+.buildx/
+.build-cache/
+
+#####################################################
+# Runner specific
+#####################################################
+_diag/
+_work/
+.runner
+
+#####################################################
+# Environment & Secret Files
+#####################################################
+.env
+.env.local
+.env*.local
+.envrc
+
+# Credentials
+*.pem
+*.key
+*.crt
+*.cer
+
+# GitHub PATs and Secrets
+.github_token
+*.token
+*.secret
+
+#####################################################
+# Editor & IDE Files
+#####################################################
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.swp
+*.swo
+
+#####################################################
+# Devbox
+#####################################################
+.devbox/
+devbox.lock
+
+#####################################################
+# Temporary Files & Logs
+#####################################################
+/tmp/
+*.tmp
+*.log
+logs/
