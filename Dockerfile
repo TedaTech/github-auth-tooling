@@ -5,10 +5,7 @@ LABEL org.opencontainers.image.description="GitHub Authentication acion for Tekt
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.url="https://github.com/TeDaTech/github-auth-tooling"
 
-
 COPY --chmod=755 *.sh /
-
-
 
 # Create non-root user and group
 RUN addgroup -g 65532 appuser && \
