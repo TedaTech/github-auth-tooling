@@ -39,7 +39,16 @@ if [ -n "${GITHUB_SECRET_MOUNT_PATH:-}" ] && [ -n "${GITHUB_SECRET_APP_ID_NAME:-
 fi
 
 # Setup GitHub App authentication if credentials are available
-gh auth setup-git
+GITHUB_JWT=$(jwt encode --secret @"$GITHUB_APP_SECRET_PATH" --alg RS256 --exp "10m" --iss "$GITHUB_APP_ID")
+
+ACCESS_TOKEN=$(curl -s -X POST \
+  -H "Authorization: Bearer $GITHUB_JWT" \
+  -H "Accept: application/vnd.github+json" \
+  "https://api.github.com/app/installations/$GITHUB_APP_INSTALLATION_ID/access_tokens" \
+  | jq -r .token)
+
+git config --global credential.helper store
+echo "https://x-access-token:${ACCESS_TOKEN}@github.com" >> ~/.git-credentials
 
 # copy the .gitconfig and .git-credentials files to the basic-auth workspace
 mkdir -p "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}"
